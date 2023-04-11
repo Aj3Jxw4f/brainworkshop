@@ -8,7 +8,7 @@ find this repository
 This is a fork of the popular brain training software BrainWorkshop
 
 Since there has not been a release in 3 years, I decided to get it working on
-Python 2+3 in additon to making many changes and improvements.
+Python 3 in additon to making many changes and improvements.
 
 Version 5 is technically in Beta, although it is expected to be more
 stable compared to the original project and work with modern Python and Pyglet
@@ -31,11 +31,9 @@ stable compared to the original project and work with modern Python and Pyglet
   them to be configurable.
 * Now compatible with Python 3
   * Fixed issues with at least three modules not loading. This was due to
-    being renamed or their semantics changing. Fixed in a way to maintain Python 2
-    compatibility.
+    being renamed or their semantics changing.
   * Fix alignment of the polygons/icons in the grid due to changes to division
     in Python 3
-* Compatible with *both* Python 2 and Python 3!
 * Fixed crash with text.Label not recognizing `halign`; use `align` instead since
   `halign` is deprecated. Though to avoid breaking anything, we try `align` first
   and if that fails we fall back to using `halign`
@@ -45,15 +43,11 @@ stable compared to the original project and work with modern Python and Pyglet
 ## Notes:
 * You need pyglet installed for this to work.
 
-### Python 3
 If you are having issues launching BrainWorkshop even if you have `pyglet`, `future`, `past` and
   `libfuturize` modules installed, follow these steps first:
 1. Copy the following folders into the brainworkshop folder: past, future and
    libfuturize. You can get those here: https://github.com/PythonCharmers/python-future
 2. Copy the pyglet module into a `pyglet` folder. You can get pyglet here: http://www.pyglet.org/
-
-### Python 2
-* You need pyglet, urllib3
 
 # Start of Old Readme
 

@@ -3335,8 +3335,8 @@ class AnalysisLabel:
                         rights[mod] += int(data[mod][x] != data[mod][x-back]  and not data[mod+'_input'][x])
 
                 if mod in ['visvis', 'visaudio', 'audiovis']:
-                    modnow = mod.startswith('vis') and 'vis' or 'audio' # these are the python<2.5 compatible versions
-                    modthn = mod.endswith('vis')   and 'vis' or 'audio' # of 'vis' if mod.startswith('vis') else 'audio'
+                    modnow = 'vis' if mod.startswith('vis') else 'audio'
+                    modthn = 'vis' if mod.endswith('vis') else 'audio'
                     rights[mod] += int((data[modnow][x] == data[modthn][x-back]) and data[mod+'_input'][x])
                     wrongs[mod] += int((data[modnow][x] == data[modthn][x-back])  ^  data[mod+'_input'][x])
                     if cfg.JAEGGI_SCORING:
