@@ -26,21 +26,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not see https://www.gnu.org/licenses/gpl-2.0.html
 #------------------------------------------------------------------------------
-# Use python3 style division for consistency
-from __future__ import division
 VERSION = '5.0'
 def debug_msg(msg):
     if DEBUG:
         if isinstance(msg, Exception):
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            exc_tb = sys.exc_info()
             print('debug: %s Line %i' % (str(msg), exc_tb.tb_lineno))
         else:
             print('debug: %s' % str(msg))
 def error_msg(msg, e = None):
     if DEBUG and e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        exc_tb = sys.exc_info()
         print("ERROR: %s\n\t%s Line %i" % (msg, e, exc_tb.tb_lineno))
     else:
         print("ERROR: %s" % msg)
@@ -54,24 +50,18 @@ def get_argv(arg):
             exit(1)
 
 import random, os, sys, socket, webbrowser, time, math, traceback, datetime, errno
-if sys.version_info >= (3,0):
-    import urllib.request, configparser as ConfigParser
-    from io import StringIO
-    import pickle
-else:
-    import urllib2 as urllib, ConfigParser, StringIO
-    import cPickle as pickle
+import urllib.request, configparser as ConfigParser
+from io import StringIO
+import pickle
 
 from decimal import Decimal
 from time import strftime
 from datetime import date
 import gettext
 
-if sys.version_info >= (3,0):
-    # TODO check if this is right
-    gettext.install('messages', localedir='res/i18n')
-else:
-    gettext.install('messages', localedir='res/i18n', unicode=True)
+# TODO check if this is right
+gettext.install('messages', localedir='res/i18n')
+_ = gettext.gettext
 
 # Clinical mode?  Clinical mode sets cfg.JAEGGI_MODE = True, enforces a minimal user
 # interface, and saves results into a binary file (default 'logfile.dat') which
@@ -762,10 +752,7 @@ def parse_config(configpath):
                                  os.path.join(get_data_dir(), configpath))
 
     defaultconfig = ConfigParser.ConfigParser()
-    if sys.version_info >= (3,):
-        defaultconfig.read_file(StringIO(CONFIGFILE_DEFAULT_CONTENTS))
-    else:
-        defaultconfig.readfp(StringIO.StringIO(CONFIGFILE_DEFAULT_CONTENTS))
+    defaultconfig.read_file(StringIO(CONFIGFILE_DEFAULT_CONTENTS))
 
     def try_eval(text):  # this is a one-use function for config parsing
         try:  return eval(text)
@@ -892,10 +879,7 @@ def update_check():
     global update_available
     global update_version
     socket.setdefaulttimeout(TIMEOUT_SILENT)
-    if sys.version_info >= (3,0):
-        req = urllib.request.Request(WEB_VERSION_CHECK)
-    else:
-        req = urllib.Request(WEB_VERSION_CHECK)
+    req = urllib.request.Request(WEB_VERSION_CHECK)
     try:
         response = urllib.urlopen(req)
         version = response.readline().strip()
@@ -1003,12 +987,8 @@ def test_music():
         debug_msg(e)
         cfg.USE_MUSIC = False
         pyglet.media.have_avbin = False
-        if hasattr(pyglet.media, '_source_class'): # pyglet v1.1
-            import pyglet.media.riff
-            pyglet.media._source_class = pyglet.media.riff.WaveSource
-        elif hasattr(pyglet.media, '_source_loader'): # pyglet v1.2 and development branches
-            import pyglet.media.riff
-            pyglet.media._source_loader = pyglet.media.RIFFSourceLoader()
+        from pyglet.media.codecs import RIFFSourceLoader # pyglet v1.4 or higher
+        pyglet.media._source_loader = RIFFSourceLoader()
         Message("""Warning: Could not load AVbin. Music disabled.
 
 This is usually due to Windows Data Execution Prevention (DEP). Due to a bug in
@@ -2109,7 +2089,7 @@ class MainMenu(Menu):
                ('user', _('Choose User'), UserScreen),
                ('graph', _('Daily Progress Graph'), NotImplemented),
                ('help', _('Help / Tutorial'), NotImplemented),
-               ('donate', _('Donate'), Notimplemented),
+               ('donate', _('Donate'), NotImplemented),
                ('forum', _('Go to Forum / Mailing List'), NotImplemented)]
         options =       [  op[0]         for op in ops]
         names   = dict( [ (op[0], op[1]) for op in ops])
