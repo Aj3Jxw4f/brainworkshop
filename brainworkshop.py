@@ -49,15 +49,14 @@ def get_argv(arg):
             error_msg("Expected an argument following %s" % arg)
             exit(1)
 
-import random, os, sys, socket, webbrowser, time, math, traceback, datetime, errno
-import urllib.request, configparser as ConfigParser
+import random, os, sys, webbrowser, time, math, traceback, datetime, errno
+import configparser as ConfigParser
 from io import StringIO
 import pickle
 
 from decimal import Decimal
 from time import strftime
 from datetime import date
-import gettext
 
 # Clinical mode?  Clinical mode sets cfg.JAEGGI_MODE = True, enforces a minimal user
 # interface, and saves results into a binary file (default 'logfile.dat') which
@@ -78,14 +77,9 @@ USER = 'default'
              #10:'chart-10-ponb.txt', 11:'chart-11-aunb.txt'}
 ATTEMPT_TO_SAVE_STATS = True
 STATS_SEPARATOR = ','
-WEB_SITE     = 'http://brainworkshop.net/'
 WEB_TUTORIAL = 'http://brainworkshop.net/tutorial.html'
-CLINICAL_TUTORIAL = WEB_TUTORIAL # FIXME: Add tutorial catered to clinical trials
 WEB_DONATE          = 'http://brainworkshop.net/donate.html'
-WEB_VERSION_CHECK   = 'http://brainworkshop.net/version.txt'
 WEB_PYGLET_DOWNLOAD = 'http://pyglet.org'
-WEB_FORUM           = 'https://groups.google.com/group/brain-training'
-WEB_MORSE           = 'https://en.wikipedia.org/wiki/Morse_code'
 TIMEOUT_SILENT =  3
 TICKS_MIN      =  3
 TICKS_MAX      = 50
@@ -849,26 +843,6 @@ def get_threshold_fallback():
         return cfg.JAEGGI_FALLBACK
     return cfg.THRESHOLD_FALLBACK
 
-# this function checks if a new update for Brain Workshop is available.
-update_available = False
-update_version = 0
-def update_check():
-    global update_available
-    global update_version
-    socket.setdefaulttimeout(TIMEOUT_SILENT)
-    req = urllib.request.Request(WEB_VERSION_CHECK)
-    try:
-        response = urllib.urlopen(req)
-        version = response.readline().strip()
-    except Exception as e:
-        debug_msg(e)
-        return
-    if version > VERSION: # simply comparing strings works just fine
-        update_available = True
-        update_version   = version
-
-if cfg.VERSION_CHECK_ON_STARTUP and not CLINICAL_MODE:
-    update_check()
 try:
     # workaround for pyglet.gl.ContextException error on certain video cards.
     os.environ["PYGLET_SHADOW_WINDOW"] = "0"
@@ -896,11 +870,6 @@ res_path = get_res_dir()
 if not os.access(res_path, os.F_OK):
     quit_with_error('Error: the resource folder\n%s' % res_path +
                     ' does not exist or is not readable.  Exiting', trace=False)
-
-if pyglet.version < '1.1':
-    quit_with_error('Error: pyglet 1.1 or greater is required.\n' +
-                    'You probably have an older version of pyglet installed.\n' +
-                    'Please visit %s' % WEB_PYGLET_DOWNLOAD, trace=False)
 
 supportedtypes = {'sounds' :['wav'],
                   'music'  :['wav', 'ogg', 'mp3', 'aac', 'mp2', 'ac3', 'm4a'], # what else?
@@ -2056,22 +2025,6 @@ class Menu:
         self.batch.draw()
         return pyglet.event.EVENT_HANDLED
 
-class MainMenu(Menu):
-    def __init__(self):
-        def NotImplemented():
-            raise NotImplementedError
-        ops = [('game', 'Choose Game Mode', GameSelect),
-               ('sounds', 'Choose Sounds', SoundSelect),
-               ('images', 'Choose Images', ImageSelect),
-               ('user', 'Choose User', UserScreen),
-               ('graph', 'Daily Progress Graph', NotImplemented),
-               ('help', 'Help / Tutorial', NotImplemented),
-               ('donate', 'Donate', NotImplemented),
-               ('forum', 'Go to Forum / Mailing List', NotImplemented)]
-        options =       [  op[0]         for op in ops]
-        names   = dict( [ (op[0], op[1]) for op in ops])
-        actions = dict( [ (op[0], op[2]) for op in ops])
-
 class UserScreen(Menu):
     def __init__(self):
 
@@ -2688,38 +2641,6 @@ class Circles:
                 else:
                     self.circle[i].colors = (self.activated * 4)
 
-
-# this is the update notification
-class UpdateLabel:
-    def __init__(self):
-        # Some versions don't accept the align argument and some don't accept halign.
-        # So try with one and if that fails use the other.
-        try:
-            self.label = pyglet.text.Label(
-                '',
-                multiline = True, width = field.size//3 - 4, align='middle',
-                font_size=calc_fontsize(11), bold=True,
-                color=(0, 128, 0, 255),
-                x=width_center(), y=field.center_x + field.size // 6,
-                anchor_x='center', anchor_y='center', batch=batch)
-        except:
-            self.label = pyglet.text.Label(
-                '',
-                multiline = True, width = field.size//3 - 4, halign='middle',
-                font_size=calc_fontsize(11), bold=True,
-                color=(0, 128, 0, 255),
-                x=width_center(), y=field.center_x + field.size // 6,
-                anchor_x='center', anchor_y='center', batch=batch)
-        self.update()
-    def update(self):
-        if not mode.started and update_available:
-            str_list = []
-            str_list.append('An update is available (')
-            str_list.append(str(update_version))
-            str_list.append('. Press W to open web site)')
-            self.label.text = ''.join(str_list)
-        else: self.label.text = ''
-
 # this is the black text above the field
 class GameModeLabel:
     def __init__(self):
@@ -2863,7 +2784,6 @@ class TitleKeysLabel:
         str_list.append('H: Help / Tutorial\n')
         if not CLINICAL_MODE:
             str_list.append('D: Donate\n')
-            str_list.append('F: Go to Forum / Mailing List\n')
             str_list.append('O: Edit configuration file')
 
         self.keys = pyglet.text.Label(
@@ -3914,7 +3834,6 @@ class Stats:
         self.time_thours = 0
 
 def update_all_labels(do_analysis=False):
-    updateLabel.update()
     congratsLabel.update()
     if do_analysis:
         analysisLabel.update()
@@ -4426,9 +4345,6 @@ def on_key_press(symbol, modifiers):
         elif symbol == key.S and not cfg.JAEGGI_MODE:
             SoundSelect()
 
-        elif symbol == key.F:
-            webbrowser.open_new_tab(WEB_FORUM)
-
         elif symbol == key.O:
             edit_config_ini()
 
@@ -4540,11 +4456,6 @@ def on_key_press(symbol, modifiers):
                 return
             SoundSelect()
 
-        elif symbol == key.W:
-            webbrowser.open_new_tab(WEB_SITE)
-            if update_available:
-                window.on_close()
-
         elif symbol == key.M:
             toggle_manual_mode()
             update_all_labels()
@@ -4556,9 +4467,6 @@ def on_key_press(symbol, modifiers):
 
         elif symbol == key.D and not CLINICAL_MODE:
             webbrowser.open_new_tab(WEB_DONATE)
-
-        elif symbol == key.J and 'morse' in cfg.AUDIO1_SETS or 'morse' in cfg.AUDIO2_SETS:
-            webbrowser.open_new_tab(WEB_MORSE)
 
 
     # these are the keys during a running session.
@@ -4723,7 +4631,6 @@ graph = Graph()
 circles = Circles()
 saccadic = Saccadic()
 
-updateLabel = UpdateLabel()
 gameModeLabel = GameModeLabel()
 jaeggiWarningLabel = JaeggiWarningLabel()
 keysListLabel = KeysListLabel()
