@@ -64,7 +64,6 @@ from datetime import date
 CLINICAL_MODE = False
 
 # Internal static options not available in config file.
-NOVBO = True
 VSYNC = False
 DEBUG = False
 FOLDER_RES = 'res'
@@ -844,10 +843,7 @@ def get_threshold_fallback():
     return cfg.THRESHOLD_FALLBACK
 
 try:
-    # workaround for pyglet.gl.ContextException error on certain video cards.
-    os.environ["PYGLET_SHADOW_WINDOW"] = "0"
     import pyglet
-    if NOVBO: pyglet.options['graphics_vbo'] = False
     from pyglet.window import key
 
     # shapes submodule is available with pyglet >=1.5.4
@@ -878,48 +874,10 @@ supportedtypes = {'sounds' :['wav'],
 def test_music():
     try:
         import pyglet
-        if pyglet.version >= '1.4':
-            from pyglet.media import have_ffmpeg
-            pyglet.media.have_avbin = have_ffmpeg()
-            if not pyglet.media.have_avbin:
-                cfg.USE_MUSIC = False
-        else:
-            try:
-                from pyglet.media import avbin
-            except Exception as e:
-                debug_msg(e)
-                pyglet.lib.load_library('avbin')
-            if pyglet.version >= '1.2':  # temporary workaround for defect in pyglet svn 2445
-                pyglet.media.have_avbin = True
-
-            # On Windows with Data Execution Protection enabled (on by default on Vista),
-            # an exception will be raised when use of avbin is attempted:
-            #   WindowsError: exception: access violation writing [ADDRESS]
-            # The file doesn't need to be in a avbin-specific format,
-            # since pyglet will use avbin over riff whenever it's detected.
-            # Let's find an audio file and try to load it to see if avbin works.
-            opj = os.path.join
-            opj = os.path.join
-            def look_for_music(path):
-                files = [p for p in os.listdir(path) if not p.startswith('.') and not os.path.isdir(opj(path, p))]
-                for f in files:
-                    ext = f.lower()[-3:]
-                    if ext in ['wav', 'ogg', 'mp3', 'aac', 'mp2', 'ac3', 'm4a'] and not ext in ('wav'):
-                        return [opj(path, f)]
-                dirs  = [opj(path, p) for p in os.listdir(path) if not p.startswith('.') and os.path.isdir(opj(path, p))]
-                results = []
-                for d in dirs:
-                    results.extend(look_for_music(d))
-                    if results: return results
-                return results
-            music_file = look_for_music(res_path)
-            if music_file:
-                # The first time we load a file should trigger the exception
-                music_file = music_file[0]
-                loaded_music = pyglet.media.load(music_file, streaming=False)
-                del loaded_music
-            else:
-                cfg.USE_MUSIC = False
+        from pyglet.media import have_ffmpeg
+        pyglet.media.have_avbin = have_ffmpeg()
+        if not pyglet.media.have_avbin:
+            cfg.USE_MUSIC = False
 
     except ImportError as e:
         debug_msg(e)
@@ -1084,24 +1042,20 @@ if cfg.WINDOW_FULLSCREEN:
 else:
     style = pyglet.window.Window.WINDOW_STYLE_DEFAULT
 
-class MyWindow(pyglet.window.Window):
-    def on_key_press(self, symbol, modifiers):
-        pass
-    def on_key_release(self, symbol, modifiers):
-        pass
+from pyglet.window import Window
 if cfg.WINDOW_FULLSCREEN:
     screen = pyglet.canvas.get_display().get_default_screen()
     cfg.WINDOW_WIDTH_FULLSCREEN  = screen.width
     cfg.WINDOW_HEIGHT_FULLSCREEN = screen.height
-    window = MyWindow(cfg.WINDOW_WIDTH_FULLSCREEN, cfg.WINDOW_HEIGHT_FULLSCREEN, caption=''.join(caption), style=style, vsync=VSYNC, fullscreen=True)
+    window = Window(cfg.WINDOW_WIDTH_FULLSCREEN, cfg.WINDOW_HEIGHT_FULLSCREEN, caption=''.join(caption), style=style, vsync=VSYNC, fullscreen=True)
 else:
-    window = MyWindow(cfg.WINDOW_WIDTH, cfg.WINDOW_HEIGHT, caption=''.join(caption), style=style, vsync=VSYNC)
+    window = Window(cfg.WINDOW_WIDTH, cfg.WINDOW_HEIGHT, caption=''.join(caption), style=style, vsync=VSYNC)
 
 #if DEBUG:
 #    window.push_handlers(pyglet.window.event.WindowEventLogger())
 if sys.platform == 'darwin' and cfg.WINDOW_FULLSCREEN:
     window.set_exclusive_keyboard()
-if sys.platform == 'linux2':
+if sys.platform == 'linux':
     window.set_icon(pyglet.image.load(resourcepaths['misc']['brain'][0]))
 
 # set the background color of the window
