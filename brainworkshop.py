@@ -845,9 +845,6 @@ def get_threshold_fallback():
 try:
     import pyglet
     from pyglet.window import key
-
-    # shapes submodule is available with pyglet >=1.5.4
-    have_shapes = hasattr(pyglet, 'shapes')
 except Exception as e:
     debug_msg(e)
     quit_with_error('Error: unable to load pyglet.  If you already installed pyglet, please ensure ctypes is installed.  Please visit %s' % WEB_PYGLET_DOWNLOAD)
@@ -1499,15 +1496,8 @@ class Graph:
             print(self.graph)
         graph_title = mode.long_mode_names[self.graph] + ' N-Back'
 
-        if have_shapes:
-            pyglet.shapes.Line(left, top, left, bottom, color=axiscolor, batch=self.batch)
-            pyglet.shapes.Line(left, bottom, right, bottom, color=axiscolor, batch=self.batch)
-        else:
-            self.batch.add(3, pyglet.gl.GL_LINE_STRIP,
-                pyglet.graphics.OrderedGroup(order=1), ('v2i', (
-                left, top,
-                left, bottom,
-                right, bottom)), ('c3B', axiscolor * 3))
+        pyglet.shapes.Line(left, top, left, bottom, color=axiscolor, batch=self.batch)
+        pyglet.shapes.Line(left, bottom, right, bottom, color=axiscolor, batch=self.batch)
 
         pyglet.text.Label(
             'G: Return to Main Screen\n\nN: Next Game Type',
@@ -1610,18 +1600,8 @@ class Graph:
                     font_size=calc_fontsize(8), bold=True, color=cfg.COLOR_TEXT,
                     x=x, y=bottom - scale_to_height(15),
                     anchor_x='center', anchor_y='top')
-                if have_shapes:
-                    pyglet.shapes.Line(x, bottom, x, top, color=minorcolor, batch=self.batch)
-                    pyglet.shapes.Line(x, bottom - scale_to_height(10), x, bottom, color=minorcolor, batch=self.batch)
-                else:
-                    self.batch.add(2, pyglet.gl.GL_LINES,
-                        pyglet.graphics.OrderedGroup(order=0), ('v2i', (
-                        x, bottom,
-                        x, top)), ('c3B', minorcolor * 2))
-                    self.batch.add(2, pyglet.gl.GL_LINES,
-                        pyglet.graphics.OrderedGroup(order=1), ('v2i', (
-                        x, bottom - scale_to_height(10),
-                        x, bottom)), ('c3B', axiscolor * 2))
+                pyglet.shapes.Line(x, bottom, x, top, color=minorcolor, batch=self.batch)
+                pyglet.shapes.Line(x, bottom - scale_to_height(10), x, bottom, color=minorcolor, batch=self.batch)
 
         if preventMusicSkipping: pyglet.clock.tick(poll=True) # Prevent music skipping 2
 
@@ -1633,32 +1613,12 @@ class Graph:
                 font_size=calc_fontsize(10), bold=False, color=cfg.COLOR_TEXT,
                 x = left - scale_to_width(30), y = y + scale_to_width(1),
                 anchor_x = 'center', anchor_y = 'center')
-            if have_shapes:
-                pyglet.shapes.Line(left, y, right, y, color=minorcolor, batch=self.batch)
-                pyglet.shapes.Line(left - scale_to_width(10), y, left, y, color=minorcolor, batch=self.batch)
-            else:
-                self.batch.add(2, pyglet.gl.GL_LINES,
-                    pyglet.graphics.OrderedGroup(order=0), ('v2i', (
-                    left, y,
-                    right, y)), ('c3B', minorcolor * 2))
-                self.batch.add(2, pyglet.gl.GL_LINES,
-                    pyglet.graphics.OrderedGroup(order=1), ('v2i', (
-                    left - scale_to_width(10), y,
-                    left, y)), ('c3B', axiscolor * 2))
+            pyglet.shapes.Line(left, y, right, y, color=minorcolor, batch=self.batch)
+            pyglet.shapes.Line(left - scale_to_width(10), y, left, y, color=minorcolor, batch=self.batch)
             y_marking += y_marking_interval
 
-        if have_shapes:
-            for index in range(len(avgpoints) // 2 - 1):
-                pyglet.shapes.Line(avgpoints[index], avgpoints[index + 1], avgpoints[index + 2], avgpoints[index + 3], batch=self.batch)
-        else:
-            self.batch.add(len(avgpoints) // 2, pyglet.gl.GL_LINE_STRIP,
-                pyglet.graphics.OrderedGroup(order=2), ('v2i',
-                avgpoints),
-                ('c3B', linecolor * (len(avgpoints) // 2)))
-            self.batch.add(len(maxpoints) // 2, pyglet.gl.GL_LINE_STRIP,
-                pyglet.graphics.OrderedGroup(order=3), ('v2i',
-                maxpoints),
-                ('c3B', linecolor2 * (len(maxpoints) // 2)))
+        for index in range(len(avgpoints) // 2 - 1):
+            pyglet.shapes.Line(avgpoints[index], avgpoints[index + 1], avgpoints[index + 2], avgpoints[index + 3], batch=self.batch)
 
         if preventMusicSkipping: pyglet.clock.tick(poll=True) # Prevent music skipping 3
 
@@ -1669,28 +1629,10 @@ class Graph:
             avg = avgpoints[index * 2 + 1]
             maxp = maxpoints[index * 2 + 1]
             # draw average
-            if have_shapes:
-                pyglet.shapes.Polygon((x - radius, avg - radius), (x - radius, avg + radius), (x + radius, avg + radius), (x + radius, avg - radius), color=linecolor, batch=self.batch)
-            else:
-                self.batch.add(4, pyglet.gl.GL_POLYGON,
-                    pyglet.graphics.OrderedGroup(order=o), ('v2i',
-                    (x - radius, avg - radius,
-                    x - radius, avg + radius,
-                    x + radius, avg + radius,
-                    x + radius, avg - radius)),
-                    ('c3B', linecolor * 4))
+            pyglet.shapes.Polygon((x - radius, avg - radius), (x - radius, avg + radius), (x + radius, avg + radius), (x + radius, avg - radius), color=linecolor, batch=self.batch)
             o += 1
             # draw maximum
-            if have_shapes:
-                pyglet.shapes.Polygon((x - radius, maxp - radius), (x - radius, maxp + radius), (x + radius, maxp + radius), (x + radius, maxp - radius), color=linecolor, batch=self.batch)
-            else:
-                self.batch.add(4, pyglet.gl.GL_POLYGON,
-                    pyglet.graphics.OrderedGroup(order=o), ('v2i',
-                    (x - radius, maxp - radius,
-                    x - radius, maxp + radius,
-                    x + radius, maxp + radius,
-                    x + radius, maxp - radius)),
-                    ('c3B', linecolor2 * 4))
+            pyglet.shapes.Polygon((x - radius, maxp - radius), (x - radius, maxp + radius), (x + radius, maxp + radius), (x + radius, maxp - radius), color=linecolor, batch=self.batch)
             o += 1
 
         if preventMusicSkipping: pyglet.clock.tick(poll=True) # Prevent music skipping 4
@@ -1861,11 +1803,7 @@ class Menu:
             anchor_x='left', anchor_y='center', font_name=self.fontlist)
                        for i in range(self.pagesize)]
 
-        if have_shapes:
-            self.marker = pyglet.shapes.Polygon((0,0), (0,0), (0,0), color=[1] * 3, batch=self.batch)
-        else:
-            self.marker = self.batch.add(3, pyglet.gl.GL_POLYGON, None, ('v2i', (0,)*6,),
-                ('c3B', self.markercolors))
+        self.marker = pyglet.shapes.Polygon((0,0), (0,0), (0,0), color=[1] * 3, batch=self.batch)
 
         self.update_labels()
 
@@ -2296,22 +2234,10 @@ class Field:
 
         # add the inside lines
         if cfg.GRIDLINES:
-            if have_shapes:
-                self.v_lines = [pyglet.shapes.Line(self.x1, self.y3, self.x2, self.y3, color=self.color, batch=batch),
-                                pyglet.shapes.Line(self.x1, self.y4, self.x2, self.y4, color=self.color, batch=batch),
-                                pyglet.shapes.Line(self.x3, self.y1, self.x3, self.y2, color=self.color, batch=batch),
-                                pyglet.shapes.Line(self.x4, self.y1, self.x4, self.y2, color=self.color, batch=batch)]
-            else:
-                self.v_lines = batch.add(8, pyglet.gl.GL_LINES, None, ('v2i', (
-                    self.x1, self.y3,
-                    self.x2, self.y3,
-                    self.x1, self.y4,
-                    self.x2, self.y4,
-                    self.x3, self.y1,
-                    self.x3, self.y2,
-                    self.x4, self.y1,
-                    self.x4, self.y2)),
-                        ('c3B', self.color8))
+            self.v_lines = [pyglet.shapes.Line(self.x1, self.y3, self.x2, self.y3, color=self.color, batch=batch),
+                            pyglet.shapes.Line(self.x1, self.y4, self.x2, self.y4, color=self.color, batch=batch),
+                            pyglet.shapes.Line(self.x3, self.y1, self.x3, self.y2, color=self.color, batch=batch),
+                            pyglet.shapes.Line(self.x4, self.y1, self.x4, self.y2, color=self.color, batch=batch)]
 
         self.crosshair_visible = False
         # initialize crosshair
@@ -2324,27 +2250,17 @@ class Field:
         if (not mode.paused) and 'position1' in mode.modalities[mode.mode] and not cfg.VARIABLE_NBACK:
             if not self.crosshair_visible:
                 length_of_crosshair = scale_to_height(8)
-                if have_shapes:
-                    self.v_crosshair = [pyglet.shapes.Line(self.center_x - length_of_crosshair, self.center_y,
-                                                           self.center_x + length_of_crosshair, self.center_y,
-                                                           color=self.color, batch=batch),
-                                        pyglet.shapes.Line(self.center_x, self.center_y - length_of_crosshair,
-                                                           self.center_x, self.center_y + length_of_crosshair,
-                                                           color=self.color, batch=batch)]
-                else:
-                    self.v_crosshair = batch.add(4, pyglet.gl.GL_LINES, None, ('v2i', (
-                        self.center_x - length_of_crosshair, self.center_y,
-                        self.center_x + length_of_crosshair, self.center_y,
-                        self.center_x, self.center_y - length_of_crosshair,
-                        self.center_x, self.center_y + length_of_crosshair)), ('c3B', self.color4))
+                self.v_crosshair = [pyglet.shapes.Line(self.center_x - length_of_crosshair, self.center_y,
+                                                       self.center_x + length_of_crosshair, self.center_y,
+                                                       color=self.color, batch=batch),
+                                    pyglet.shapes.Line(self.center_x, self.center_y - length_of_crosshair,
+                                                       self.center_x, self.center_y + length_of_crosshair,
+                                                       color=self.color, batch=batch)]
                 self.crosshair_visible = True
         else:
             if self.crosshair_visible:
-                if have_shapes:
-                    for i in range(2):
-                        self.v_crosshair[i].delete()
-                else:
-                    self.v_crosshair.delete()
+                for i in range(2):
+                    self.v_crosshair[i].delete()
                 self.crosshair_visible = False
 
 
@@ -2413,12 +2329,7 @@ class Visual:
                 cr = self.size // 5
 
                 if cfg.OLD_STYLE_SHARP_CORNERS:
-                    self.square = batch.add(4, pyglet.gl.GL_POLYGON, None, ('v2i', (
-                        lx, by,
-                        rx, by,
-                        rx, ty,
-                        lx, ty,)),
-                        ('c4B', self.color * 4))
+                    self.square = pyglet.shapes.Rectangle(lx, by, rx - lx, ty - by, color=self.color, batch=batch)
                 else:
                     #rounded corners: bottom-left, bottom-right, top-right, top-left
                     x = ([lx + int(cr*(1-math.cos(math.radians(i)))) for i in range(0, 91, 10)] +
@@ -2426,13 +2337,12 @@ class Visual:
                          [rx - int(cr*(1-math.sin(math.radians(i)))) for i in range(90, -1, -10)] +
                          [lx + int(cr*(1-math.cos(math.radians(i)))) for i in range(90, -1, -10)])
 
-                    y = ([by + int(cr*(1-math.sin(math.radians(i)))) for i in range(0, 91, 10) + range(90, -1, -10)] +
-                         [ty - int(cr*(1-math.sin(math.radians(i)))) for i in range(0, 91, 10) + range(90, -1, -10)])
+                    y = ([by + int(cr*(1-math.sin(math.radians(i)))) for i in list(range(0, 91, 10)) + list(range(90, -1, -10))] +
+                         [ty - int(cr*(1-math.sin(math.radians(i)))) for i in list(range(0, 91, 10)) + list(range(90, -1, -10))])
                     xy = []
-                    for a,b in zip(x,y): xy.extend((a, b))
+                    xy_pairs = [[a, b] for a, b in zip(x, y)]
 
-                    self.square = batch.add(40, pyglet.gl.GL_POLYGON, None,
-                                            ('v2i', xy), ('c4B', self.color * 40))
+                    self.square = pyglet.shapes.Polygon(*xy_pairs, color=self.color, batch=batch)
 
             else:
                 # use sprite squares
@@ -2548,52 +2458,31 @@ class Circles:
 
         self.circle = []
         for index in range(0, cfg.THRESHOLD_FALLBACK_SESSIONS - 1):
-            if have_shapes:
-                self.circle.append([pyglet.shapes.Rectangle(self.start_x + self.distance * index - self.radius,
-                                                            self.y + self.radius,
-                                                            self.start_x + self.distance * index + self.radius,
-                                                            self.y + self.radius,
-                                                            color=self.not_activated[:3], batch=batch),
-                                    pyglet.shapes.Rectangle(self.start_x + self.distance * index + self.radius,
-                                                            self.y - self.radius,
-                                                            self.start_x + self.distance * index - self.radius,
-                                                            self.y - self.radius,
-                                                            color=self.not_activated[:3], batch=batch)])
-            else:
-                self.circle.append(batch.add(4, pyglet.gl.GL_QUADS, None, ('v2i', (
-                    self.start_x + self.distance * index - self.radius,
-                    self.y + self.radius,
-                    self.start_x + self.distance * index + self.radius,
-                    self.y + self.radius,
-                    self.start_x + self.distance * index + self.radius,
-                    self.y - self.radius,
-                    self.start_x + self.distance * index - self.radius,
-                    self.y - self.radius)),
-                    ('c4B', self.not_activated * 4)))
+            self.circle.append([pyglet.shapes.Rectangle(self.start_x + self.distance * index - self.radius,
+                                                        self.y + self.radius,
+                                                        self.start_x + self.distance * index + self.radius,
+                                                        self.y + self.radius,
+                                                        color=self.not_activated[:3], batch=batch),
+                                pyglet.shapes.Rectangle(self.start_x + self.distance * index + self.radius,
+                                                        self.y - self.radius,
+                                                        self.start_x + self.distance * index - self.radius,
+                                                        self.y - self.radius,
+                                                        color=self.not_activated[:3], batch=batch)])
 
         self.update()
 
     def update(self):
         if mode.manual or mode.started or cfg.JAEGGI_MODE:
             for i in range(0, cfg.THRESHOLD_FALLBACK_SESSIONS - 1):
-                if have_shapes:
-                    for j in range(2):
-                        self.circle[i][j].colors = (self.invisible * 4)
-                else:
-                    self.circle[i].colors = (self.invisible * 4)
+                for j in range(2):
+                    self.circle[i][j].colors = (self.invisible * 4)
         else:
             for i in range(0, cfg.THRESHOLD_FALLBACK_SESSIONS - 1):
-                if have_shapes:
-                    for j in range(2):
-                        self.circle[i][j].colors = (self.not_activated * 4)
-                else:
-                    self.circle[i].colors = (self.not_activated * 4)
+                for j in range(2):
+                    self.circle[i][j].colors = (self.not_activated * 4)
             for i in range(0, mode.progress):
-                if have_shapes:
-                    for j in range(2):
-                        self.circle[i][j].colors = (self.activated * 4)
-                else:
-                    self.circle[i].colors = (self.activated * 4)
+                for j in range(2):
+                    self.circle[i][j].colors = (self.activated * 4)
 
 # this is the black text above the field
 class GameModeLabel:
@@ -3411,10 +3300,6 @@ class Saccadic:
             x - self.radius, y + self.radius,  # upper-left
 
             )), ('c4B', self.color * 4))
-
-#                    self.square = batch.add(40, pyglet.gl.GL_POLYGON, None,
-#                                            ('v2i', xy), ('c4B', self.color * 40))
-
 
 class Panhandle:
     def __init__(self, n=-1):
@@ -4562,15 +4447,7 @@ def pulsate(dt):
 batch = pyglet.graphics.Batch()
 
 try:
-    if have_shapes:
-        test_polygon = pyglet.shapes.Rectangle(100, 100, 200, 200, color=[0] * 3, batch=batch)
-    else:
-        test_polygon = batch.add(4, pyglet.gl.GL_QUADS, None, ('v2i', (
-            100, 100,
-            100, 200,
-            200, 200,
-            200, 100)),
-                ('c3B', (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
+    test_polygon = pyglet.shapes.Rectangle(100, 100, 200, 200, color=[0] * 3, batch=batch)
     test_polygon.delete()
 except Exception as e:
     debug_msg(e)
