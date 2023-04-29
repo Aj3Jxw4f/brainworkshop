@@ -213,8 +213,8 @@ CONFIGFILE_DEFAULT_CONTENTS = """
 # With the default BW sequence generation model, the visual and auditory
 # sequences are more randomized and unpredictable than they are in Jaeggi
 # mode.  The only effect of this option is to set the following options:
-#   ANIMATE_SQUARES = False, OLD_STYLE_SQUARES = True,
-#   OLD_STYLE_SHARP_CORNERS = True, SHOW_FEEDBACK = False,
+#   OLD_STYLE_SQUARES = True,
+#   SHOW_FEEDBACK = False,
 #   GRIDLINES = False, CROSSHAIRS = True, BLACK_BACKGROUND = True,
 #   WINDOW_FULLSCREEN = True, HIDE_TEXT = True, FIELD_EXPAND = True
 # Default: False
@@ -247,8 +247,8 @@ JAEGGI_SCORING = False
 # In Jaeggi Mode, adjust the default appearance and sounds of Brain Workshop
 # to emulate the original software used in the study?
 # If this is enabled, the following options will be set:
-#    AUDIO1_SETS = ['letters'],  ANIMATE_SQUARES = False,
-#    OLD_STYLE_SQUARES = True, OLD_STYLE_SHARP_CORNERS = True,
+#    AUDIO1_SETS = ['letters'],
+#    OLD_STYLE_SQUARES = True,
 #    SHOW_FEEDBACK = False, GRIDLINES = False, CROSSHAIRS = True
 # (note: this option only takes effect if JAEGGI_MODE is set to True)
 # Default: True
@@ -333,13 +333,9 @@ CHANNEL_AUDIO2 = 'right'
 # Options: 'color' or 'image'
 MULTI_MODE = 'color'
 
-# Animate squares?
-ANIMATE_SQUARES = False
-
 # Use the flat, single-color squares like in versions prior to 4.1?
 # Also, use sharp corners or rounded corners?
 OLD_STYLE_SQUARES = False
-OLD_STYLE_SHARP_CORNERS = False
 
 # Start in Manual mode?
 # If this is False, the game will start in standard mode.
@@ -795,9 +791,7 @@ if CLINICAL_MODE:
     cfg.SKIP_TITLE_SCREEN                = True
     cfg.USE_MUSIC                        = False
 elif cfg.JAEGGI_INTERFACE_DEFAULT_SCORING:
-    cfg.ANIMATE_SQUARES         = False
     cfg.OLD_STYLE_SQUARES       = True
-    cfg.OLD_STYLE_SHARP_CORNERS = True
     cfg.GRIDLINES               = False
     cfg.CROSSHAIRS              = True
     cfg.SHOW_FEEDBACK           = False
@@ -812,9 +806,7 @@ if cfg.JAEGGI_MODE and not cfg.JAEGGI_INTERFACE_DEFAULT_SCORING:
     cfg.JAEGGI_SCORING = True
     if cfg.JAEGGI_FORCE_OPTIONS:
         cfg.AUDIO1_SETS = ['letters']
-        cfg.ANIMATE_SQUARES   = False
         cfg.OLD_STYLE_SQUARES = True
-        cfg.OLD_STYLE_SHARP_CORNERS = True
         cfg.GRIDLINES     = False
         cfg.CROSSHAIRS    = True
         cfg.SHOW_FEEDBACK = False
@@ -2281,9 +2273,7 @@ class Visual:
                               for path in resourcepaths['misc']['colored-squares']]
         self.spr_square_size = self.spr_square[0].width
 
-        if cfg.ANIMATE_SQUARES:
-            self.size_factor = 0.9375
-        elif cfg.OLD_STYLE_SQUARES:
+        if cfg.OLD_STYLE_SQUARES:
             self.size_factor = 0.9375
         else:
             self.size_factor = 1.0
@@ -2312,7 +2302,7 @@ class Visual:
         self.image_indices = indices
         self.images = [self.image_set[i] for i in indices]
 
-    def spawn(self, position=0, color=1, vis=0, number=-1, operation='none', variable = 0):
+    def spawn(self, position=0, color=1, vis=0, number=-1, variable = 0):
         self.position = position
         self.color = get_color(color)
         self.vis = vis
@@ -2326,23 +2316,7 @@ class Visual:
                 rx = self.center_x + self.size // 2 - 2
                 by = self.center_y - self.size // 2 + 2
                 ty = self.center_y + self.size // 2 - 2
-                cr = self.size // 5
-
-                if cfg.OLD_STYLE_SHARP_CORNERS:
-                    self.square = pyglet.shapes.Rectangle(lx, by, rx - lx, ty - by, color=self.color, batch=batch)
-                else:
-                    #rounded corners: bottom-left, bottom-right, top-right, top-left
-                    x = ([lx + int(cr*(1-math.cos(math.radians(i)))) for i in range(0, 91, 10)] +
-                         [rx - int(cr*(1-math.sin(math.radians(i)))) for i in range(0, 91, 10)] +
-                         [rx - int(cr*(1-math.sin(math.radians(i)))) for i in range(90, -1, -10)] +
-                         [lx + int(cr*(1-math.cos(math.radians(i)))) for i in range(90, -1, -10)])
-
-                    y = ([by + int(cr*(1-math.sin(math.radians(i)))) for i in list(range(0, 91, 10)) + list(range(90, -1, -10))] +
-                         [ty - int(cr*(1-math.sin(math.radians(i)))) for i in list(range(0, 91, 10)) + list(range(90, -1, -10))])
-                    xy = []
-                    xy_pairs = [[a, b] for a, b in zip(x, y)]
-
-                    self.square = pyglet.shapes.Polygon(*xy_pairs, color=self.color, batch=batch)
+                self.square = pyglet.shapes.Rectangle(lx, by, rx - lx, ty - by, color=self.color, batch=batch)
 
             else:
                 # use sprite squares
@@ -2353,10 +2327,6 @@ class Visual:
                 self.square.scale = 1.0 * self.size / self.spr_square_size
                 self.square_size_scaled = self.square.width
                 self.square.batch = batch
-
-                # initiate square animation
-                self.age = 0.0
-                pyglet.clock.schedule_interval(self.animate_square, 1/60.)
 
         elif 'arithmetic' in mode.modalities[mode.mode]: # display a number
             self.label.text = str(number)
@@ -2380,11 +2350,6 @@ class Visual:
             self.square_size_scaled = self.square.width
             self.square.batch = batch
 
-            # initiate square animation
-            self.age = 0.0
-            #self.animate_square(0)
-            pyglet.clock.schedule_interval(self.animate_square, 1/60.)
-
         if variable > 0:
             # display variable n-back level
             self.variable_label.text = str(variable)
@@ -2400,28 +2365,6 @@ class Visual:
 
         self.visible = True
 
-    def animate_square(self, dt):
-        self.age += dt
-        if mode.paused: return
-        if not cfg.ANIMATE_SQUARES: return
-
-        # factors which affect animation
-        scale_addition = dt / 8
-        fade_begin_time = 0.4
-        fade_end_time = 0.5
-        fade_end_transparency = 1.0  # 1 = fully transparent, 0.5 = half transparent
-
-        self.square.scale += scale_addition
-        dx = (self.square.width - self.square_size_scaled) // 2
-        self.square.x = self.center_x - field.size // 6 - dx
-        self.square.y = self.center_y - field.size // 6 - dx
-
-        if self.age > fade_begin_time:
-            factor = (1.0 - fade_end_transparency * (self.age - fade_begin_time) / (fade_end_time - fade_begin_time))
-            if factor > 1.0: factor = 1.0
-            if factor < 0.0: factor = 0.0
-            self.square.opacity = int(255 * factor)
-
     def hide(self):
         if self.visible:
             self.label.text = ''
@@ -2430,13 +2373,11 @@ class Visual:
                   or 'vis1' in mode.modalities[mode.mode] \
                   or (mode.flags[mode.mode]['multi'] > 1 and cfg.MULTI_MODE == 'image'): # hide pictogram
                 self.square.batch = None
-                pyglet.clock.unschedule(self.animate_square)
             elif self.vis == 0:
                 if cfg.OLD_STYLE_SQUARES:
                     self.square.delete()
                 else:
                     self.square.batch = None
-                    pyglet.clock.unschedule(self.animate_square)
             self.visible = False
 
 # Circles is the 3-strikes indicator in the top left corner of the screen.
@@ -4050,7 +3991,7 @@ def generate_stimulus():
     if multi == 1:
         visuals[0].spawn(mode.current_stim['position1'], mode.current_stim['color'],
                          mode.current_stim['vis'], mode.current_stim['number'],
-                         mode.current_operation, variable)
+                         variable)
     else: # multi > 1
         for i in range(1, multi+1):
             if cfg.MULTI_MODE == 'color':
@@ -4058,10 +3999,10 @@ def generate_stimulus():
                     print("trial=%i, \tpos=%i, \taud=%i, \tcol=%i, \tvis=%i, \tnum=%i,\top=%s, \tvar=%i" % \
                         (mode.trial_number, mode.current_stim['position' + repr(i)], mode.current_stim['audio'],
                         cfg.VISUAL_COLORS[i-1], mode.current_stim['vis'+repr(i)], \
-                        mode.current_stim['number'], mode.current_operation, variable))
+                        mode.current_stim['number'], variable))
                 visuals[i-1].spawn(mode.current_stim['position'+repr(i)], cfg.VISUAL_COLORS[i-1],
                                    mode.current_stim['vis'+repr(i)], mode.current_stim['number'],
-                                   mode.current_operation, variable)
+                                   variable)
             else:
                 if DEBUG:
                     print("trial=%i, \tpos=%i, \taud=%i, \tcol=%i, \tvis=%i, \tnum=%i,\top=%s, \tvar=%i" % \
@@ -4069,8 +4010,8 @@ def generate_stimulus():
                         mode.current_stim['vis'+repr(i)], i, \
                         mode.current_stim['number'], mode.current_operation, variable))
                 visuals[i-1].spawn(mode.current_stim['position'+repr(i)], mode.current_stim['vis'+repr(i)],
-                                   i,                            mode.current_stim['number'],
-                                   mode.current_operation, variable)
+                                   i, mode.current_stim['number'],
+                                   variable)
 
 def toggle_manual_mode():
     if mode.manual:
