@@ -618,39 +618,6 @@ if '--dump' in sys.argv:
 if get_argv('--configfile'):
     CONFIGFILE = get_argv('--configfile')
 
-messagequeue = [] # add messages generated during loading here
-class Message:
-    def __init__(self, msg):
-        if not 'window' in globals():
-            print(msg)               # dump it to console just in case
-            messagequeue.append(msg) # but we'll display this later
-            return
-        self.batch = pyglet.graphics.Batch()
-        self.label = pyglet.text.Label(msg,
-                            font_name=self.fontlist_serif,
-                            color=cfg.COLOR_TEXT,
-                            batch=self.batch,
-                            multiline=True,
-                            width=(4*window.width)/5,
-                            font_size=calc_fontsize(14),
-                            x=width_center(), y=height_center(),
-                            anchor_x='center', anchor_y='center')
-        window.push_handlers(self.on_key_press, self.on_draw)
-        self.on_draw()
-
-    def on_key_press(self, sym, mod):
-        if sym:
-            self.close()
-        return pyglet.event.EVENT_HANDLED
-
-    def close(self):
-        return window.remove_handlers(self.on_key_press, self.on_draw)
-
-    def on_draw(self):
-        window.clear()
-        self.batch.draw()
-        return pyglet.event.EVENT_HANDLED
-
 def load_last_user(lastuserpath):
     path = os.path.join(get_data_dir(), lastuserpath)
     if os.path.isfile(path):
@@ -4391,10 +4358,6 @@ def scale_brain(dt):
                            field.center_y - brain_graphic.height//2 + 40)
 
 scale_brain(scale_to_width(1))
-# If we had messages queued during loading (like from moving our data files), display them now
-messagequeue.reverse()
-for msg in messagequeue:
-    Message(msg)
 
 # start the event loops!
 if __name__ == '__main__':
