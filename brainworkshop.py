@@ -120,14 +120,6 @@ def calc_fontsize(size):
 def calc_dpi(size = 100):
     return int(size * ((window.width + window.height)/(DEFAULT_WINDOW_WIDTH + DEFAULT_WINDOW_HEIGHT)))
 
-def get_pyglet_media_Player():
-    try:
-        my_player = pyglet.media.Player()
-    except Exception as e:
-        debug_msg(e)
-        my_player = pyglet.media.ManagedSoundPlayer()
-    return my_player
-
 # some functions to assist in path determination
 def main_is_frozen():
     return hasattr(sys, "frozen") # py2exe
@@ -851,52 +843,6 @@ supportedtypes = {'sounds' :['wav'],
                   'music'  :['wav', 'ogg', 'mp3', 'aac', 'mp2', 'ac3', 'm4a'], # what else?
                   'sprites':['png', 'jpg', 'bmp']}
 
-def test_music():
-    try:
-        import pyglet
-        from pyglet.media import have_ffmpeg
-        pyglet.media.have_avbin = have_ffmpeg()
-        if not pyglet.media.have_avbin:
-            cfg.USE_MUSIC = False
-
-    except ImportError as e:
-        debug_msg(e)
-        cfg.USE_MUSIC = False
-        if pyglet.version >= '1.2':
-            pyglet.media.have_avbin = False
-        print('AVBin not detected. Music disabled.')
-        print('Download AVBin from: https://avbin.github.io')
-
-    except Exception as e: # WindowsError
-        debug_msg(e)
-        cfg.USE_MUSIC = False
-        pyglet.media.have_avbin = False
-        from pyglet.media.codecs import RIFFSourceLoader # pyglet v1.4 or higher
-        pyglet.media._source_loader = RIFFSourceLoader()
-        Message("""Warning: Could not load AVbin. Music disabled.
-
-This is usually due to Windows Data Execution Prevention (DEP). Due to a bug in
-AVbin, a library used for decoding sound files, music is not available when \
-DEP is enabled. To enable music, disable DEP for Brain Workshop. To simply get \
-rid of this message, set USE_MUSIC = False in your config.ini file.
-
-To disable DEP:
-
-1. Open Control Panel -> System
-2. Select Advanced System Settings
-3. Click on Performance -> Settings
-4. Click on the Data Execution Prevention tab
-5. Either select the "Turn on DEP for essential Windows programs and services \
-only" option, or add an exception for Brain Workshop.
-
-Press any key to continue without music support.
-""")
-
-test_music()
-if pyglet.media.have_avbin: supportedtypes['sounds'] = supportedtypes['music']
-elif cfg.USE_MUSIC:         supportedtypes['music'] = supportedtypes['sounds']
-else:                       del supportedtypes['music']
-
 supportedtypes['misc'] = supportedtypes['sounds'] + supportedtypes['sprites']
 
 resourcepaths = {}
@@ -925,8 +871,8 @@ if cfg.USE_APPLAUSE:
 
                      for soundfile in resourcepaths['misc']['applause']]
 
-applauseplayer = get_pyglet_media_Player()
-musicplayer    = get_pyglet_media_Player()
+applauseplayer = pyglet.media.Player()
+musicplayer    = pyglet.media.Player()
 def play_applause():
     applauseplayer.queue(random.choice(applausesounds))
     applauseplayer.volume = cfg.SFX_VOLUME
@@ -3768,8 +3714,8 @@ def compute_bt_sequence():
 
     mode.bt_sequence = bt_sequence
 
-player = get_pyglet_media_Player()
-player2 = get_pyglet_media_Player()
+player = pyglet.media.Player()
+player2 = pyglet.media.Player()
 # responsible for the random generation of each new stimulus (audio, color, position)
 def generate_stimulus():
     # first, randomly generate all stimuli
