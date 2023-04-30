@@ -2394,9 +2394,6 @@ class KeysListLabel:
                 self.label.y = from_top_edge(30)
             else:
                 self.label.y = from_top_edge(40)
-            if 'morse' in cfg.AUDIO1_SETS or 'morse' in cfg.AUDIO2_SETS:
-                str_list.append('J: Morse Code Reference\n')
-                str_list.append('\n')
             str_list.append('H: Help / Tutorial\n')
             str_list.append('\n')
             if mode.manual:
