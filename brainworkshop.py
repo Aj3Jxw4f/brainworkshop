@@ -4049,13 +4049,6 @@ def on_key_press(symbol, modifiers):
         elif symbol == key.SPACE:
             new_session()
 
-        elif CLINICAL_MODE:
-            pass
-            #if symbol == key.H:
-                #webbrowser.open_new_tab(CLINICAL_TUTORIAL)
-        # No elifs below this line at this indentation will be
-        # executed in CLINICAL_MODE
-
         elif symbol == key.E and cfg.WINDOW_FULLSCREEN:
             saccadic.start()
 
