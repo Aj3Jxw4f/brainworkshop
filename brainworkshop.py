@@ -2177,6 +2177,9 @@ class Visual:
                               for path in resourcepaths['misc']['colored-squares']]
         self.spr_square_size = self.spr_square[0].width
 
+        # Initialize
+        self.letters = []
+        self.image_set_index = None
         # load an image set
         self.load_set()
 
@@ -3745,6 +3748,7 @@ def generate_stimulus():
 
     if mode.modalities[mode.mode] != ['arithmetic'] and mode.trial_number > mode.back:
         for mod in mode.modalities[mode.mode]:
+            current = None
             if   mod in ('visvis', 'visaudio', 'image'):
                 current = 'vis'
             elif mod in ('audiovis', ):
@@ -3779,7 +3783,7 @@ def generate_stimulus():
                          stats.session[back_data][mode.trial_number -  real_back    - 1]:
                         back = real_back + i
                 if back == real_back: back = None # if none of the above worked
-                elif DEBUG:
+                elif DEBUG and current:
                     print('Forcing interference for %s' % current)
 
             if back:
@@ -3885,7 +3889,7 @@ def generate_stimulus():
                     print("trial=%i, \tpos=%i, \taud=%i, \tcol=%i, \tvis=%i, \tnum=%i,\top=%s, \tvar=%i" % \
                         (mode.trial_number, mode.current_stim['position' + repr(i)], mode.current_stim['audio'],
                         cfg.VISUAL_COLORS[i-1], mode.current_stim['vis'+repr(i)], \
-                        mode.current_stim['number'], variable))
+                        mode.current_stim['number'], mode.current_operation, variable))
                 visuals[i-1].spawn(mode.current_stim['position'+repr(i)], cfg.VISUAL_COLORS[i-1],
                                    mode.current_stim['vis'+repr(i)], mode.current_stim['number'],
                                    variable)
