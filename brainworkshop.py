@@ -79,6 +79,7 @@ STATS_SEPARATOR = ','
 WEB_TUTORIAL = 'http://brainworkshop.net/tutorial.html'
 WEB_DONATE          = 'http://brainworkshop.net/donate.html'
 WEB_PYGLET_DOWNLOAD = 'http://pyglet.org'
+WEB_FORUM           = 'https://groups.google.com/group/brain-training'
 TIMEOUT_SILENT =  3
 TICKS_MIN      =  3
 TICKS_MAX      = 50
@@ -2539,6 +2540,7 @@ class TitleKeysLabel:
         str_list.append('H: Help / Tutorial\n')
         if not CLINICAL_MODE:
             str_list.append('D: Donate\n')
+            str_list.append('F: Go to Forum / Mailing List\n')
             str_list.append('O: Edit configuration file')
 
         self.keys = pyglet.text.Label(
@@ -4095,6 +4097,9 @@ def on_key_press(symbol, modifiers):
 
         elif symbol == key.S and not cfg.JAEGGI_MODE:
             SoundSelect()
+
+        elif symbol == key.F:
+            webbrowser.open_new_tab(WEB_FORUM)
 
         elif symbol == key.O:
             edit_config_ini()
