@@ -76,6 +76,7 @@ USER = 'default'
              #10:'chart-10-ponb.txt', 11:'chart-11-aunb.txt'}
 ATTEMPT_TO_SAVE_STATS = True
 STATS_SEPARATOR = ','
+WEB_SITE     = 'http://brainworkshop.net/'
 WEB_TUTORIAL = 'http://brainworkshop.net/tutorial.html'
 WEB_DONATE          = 'http://brainworkshop.net/donate.html'
 WEB_PYGLET_DOWNLOAD = 'http://pyglet.org'
@@ -4121,6 +4122,9 @@ def on_key_press(symbol, modifiers):
                 jaeggiWarningLabel.show()
                 return
             SoundSelect()
+
+        elif symbol == key.W:
+            webbrowser.open_new_tab(WEB_SITE)
 
         elif symbol == key.M:
             toggle_manual_mode()
