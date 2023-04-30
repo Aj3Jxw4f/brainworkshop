@@ -213,7 +213,6 @@ CONFIGFILE_DEFAULT_CONTENTS = """
 # With the default BW sequence generation model, the visual and auditory
 # sequences are more randomized and unpredictable than they are in Jaeggi
 # mode.  The only effect of this option is to set the following options:
-#   OLD_STYLE_SQUARES = True,
 #   SHOW_FEEDBACK = False,
 #   GRIDLINES = False, CROSSHAIRS = True, BLACK_BACKGROUND = True,
 #   WINDOW_FULLSCREEN = True, HIDE_TEXT = True, FIELD_EXPAND = True
@@ -248,7 +247,6 @@ JAEGGI_SCORING = False
 # to emulate the original software used in the study?
 # If this is enabled, the following options will be set:
 #    AUDIO1_SETS = ['letters'],
-#    OLD_STYLE_SQUARES = True,
 #    SHOW_FEEDBACK = False, GRIDLINES = False, CROSSHAIRS = True
 # (note: this option only takes effect if JAEGGI_MODE is set to True)
 # Default: True
@@ -332,10 +330,6 @@ CHANNEL_AUDIO2 = 'right'
 # default?
 # Options: 'color' or 'image'
 MULTI_MODE = 'color'
-
-# Use the flat, single-color squares like in versions prior to 4.1?
-# Also, use sharp corners or rounded corners?
-OLD_STYLE_SQUARES = False
 
 # Start in Manual mode?
 # If this is False, the game will start in standard mode.
@@ -523,8 +517,6 @@ ARITHMETIC_ACCEPTABLE_DECIMALS = ['0.1', '0.2', '0.3', '0.4', '0.5', '0.6',
 
 # Colors for the color n-back task
 # format: (red, green, blue, 255)
-# Note: Changing these colors will have no effect in Dual or
-#   Triple N-Back unless OLD_STYLE_SQUARES is set to True.
 # the _BLK colors are used when BLACK_BACKGROUND is set to True.
 COLOR_1 = (0, 0, 255, 255)
 COLOR_2 = (0, 255, 255, 255)
@@ -791,7 +783,6 @@ if CLINICAL_MODE:
     cfg.SKIP_TITLE_SCREEN                = True
     cfg.USE_MUSIC                        = False
 elif cfg.JAEGGI_INTERFACE_DEFAULT_SCORING:
-    cfg.OLD_STYLE_SQUARES       = True
     cfg.GRIDLINES               = False
     cfg.CROSSHAIRS              = True
     cfg.SHOW_FEEDBACK           = False
@@ -806,7 +797,6 @@ if cfg.JAEGGI_MODE and not cfg.JAEGGI_INTERFACE_DEFAULT_SCORING:
     cfg.JAEGGI_SCORING = True
     if cfg.JAEGGI_FORCE_OPTIONS:
         cfg.AUDIO1_SETS = ['letters']
-        cfg.OLD_STYLE_SQUARES = True
         cfg.GRIDLINES     = False
         cfg.CROSSHAIRS    = True
         cfg.SHOW_FEEDBACK = False
@@ -2273,12 +2263,6 @@ class Visual:
                               for path in resourcepaths['misc']['colored-squares']]
         self.spr_square_size = self.spr_square[0].width
 
-        if cfg.OLD_STYLE_SQUARES:
-            self.size_factor = 0.9375
-        else:
-            self.size_factor = 1.0
-        self.size = int(field.size / 3 * self.size_factor)
-
         # load an image set
         self.load_set()
 
@@ -2307,26 +2291,15 @@ class Visual:
         self.color = get_color(color)
         self.vis = vis
 
-        self.center_x = field.center_x + (field.size // 3)*((position+1)%3 - 1) + (field.size // 3 - self.size)//2
-        self.center_y = field.center_y + (field.size // 3)*((position//3+1)%3 - 1) + (field.size // 3 - self.size)//2
+        self.center_x = field.center_x + (field.size // 3)*((position+1)%3 - 1)
+        self.center_y = field.center_y + (field.size // 3)*((position//3+1)%3 - 1)
 
         if self.vis == 0:
-            if cfg.OLD_STYLE_SQUARES:
-                lx = self.center_x - self.size // 2 + 2
-                rx = self.center_x + self.size // 2 - 2
-                by = self.center_y - self.size // 2 + 2
-                ty = self.center_y + self.size // 2 - 2
-                self.square = pyglet.shapes.Rectangle(lx, by, rx - lx, ty - by, color=self.color, batch=batch)
-
-            else:
-                # use sprite squares
-                self.square = self.spr_square[color-1]
-                self.square.opacity = 255
-                self.square.x = self.center_x - field.size // 6
-                self.square.y = self.center_y - field.size // 6
-                self.square.scale = 1.0 * self.size / self.spr_square_size
-                self.square_size_scaled = self.square.width
-                self.square.batch = batch
+            shape_size = int(field.size / 3 * 0.9)
+            lx = self.center_x - shape_size // 2
+            by = self.center_y - shape_size // 2
+            side = shape_size - 1
+            self.square = pyglet.shapes.Rectangle(lx, by, side, side, color=self.color, batch=batch)
 
         elif 'arithmetic' in mode.modalities[mode.mode]: # display a number
             self.label.text = str(number)
@@ -2341,12 +2314,13 @@ class Visual:
         elif 'image' in mode.modalities[mode.mode] \
               or 'vis1' in mode.modalities[mode.mode] \
               or (mode.flags[mode.mode]['multi'] > 1 and cfg.MULTI_MODE == 'image'): # display a pictogram
+            shape_size = int(field.size / 3)
             self.square = self.images[vis-1]
             self.square.opacity = 255
             self.square.color = self.color[:3]
             self.square.x = self.center_x - field.size // 6
             self.square.y = self.center_y - field.size // 6
-            self.square.scale = 1.0 * self.size / self.image_set_size
+            self.square.scale = 1.0 * shape_size / self.image_set_size
             self.square_size_scaled = self.square.width
             self.square.batch = batch
 
@@ -2374,10 +2348,7 @@ class Visual:
                   or (mode.flags[mode.mode]['multi'] > 1 and cfg.MULTI_MODE == 'image'): # hide pictogram
                 self.square.batch = None
             elif self.vis == 0:
-                if cfg.OLD_STYLE_SQUARES:
-                    self.square.delete()
-                else:
-                    self.square.batch = None
+                self.square.delete()
             self.visible = False
 
 # Circles is the 3-strikes indicator in the top left corner of the screen.

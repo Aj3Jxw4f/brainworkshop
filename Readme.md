@@ -181,8 +181,6 @@ Change Log:
    if the program was launched between midnight and 4 AM.
 * A setting to skip the title screen was added to the config file.
 * The grid lines and crosshairs can be toggled in the config file.
-* A setting was added to select rounded or sharp corners for the
-   solid-color squares.
 * A setting was added to expand the size of the field to fill the screen.
 * Arithmetic Mode: The acceptable decimal answers can be set in the
    config file.
@@ -242,7 +240,6 @@ Change Log:
 
 4.11:
 * Fixed level decrease threshold in Novice mode
-* Added a configuration option to use the pre-4.1 flat squares
 * Two changes to Novice Mode to eliminate the last of the differences
   compared to the original study protocol:
      1. Exactly 6 position and 6 audio matches are now generated each
@@ -251,7 +248,6 @@ Change Log:
            individual modality scores (visual & audio).
 
 4.1:
-* The squares in Dual & Triple N-Back have a new look.
 * Individual scores for each input category (position, sound, etc)
    are shown in the graph screen.
 * The number of sessions below 50% required to trigger a
