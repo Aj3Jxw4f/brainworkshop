@@ -240,6 +240,7 @@ Change Log:
 
 4.11:
 * Fixed level decrease threshold in Novice mode
+* Added a configuration option to use the pre-4.1 flat squares
 * Two changes to Novice Mode to eliminate the last of the differences
   compared to the original study protocol:
      1. Exactly 6 position and 6 audio matches are now generated each
@@ -248,6 +249,7 @@ Change Log:
            individual modality scores (visual & audio).
 
 4.1:
+* The squares in Dual & Triple N-Back have a new look.
 * Individual scores for each input category (position, sound, etc)
    are shown in the graph screen.
 * The number of sessions below 50% required to trigger a
