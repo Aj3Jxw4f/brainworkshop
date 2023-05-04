@@ -2432,8 +2432,7 @@ class KeysListLabel:
                     'D: Donate\n', '\n',
                     'G: Daily Progress Graph\n', '\n',
                     'W: Brain Workshop Web Site\n'])
-            if cfg.WINDOW_FULLSCREEN:
-                str_list.append('E: Saccadic Eye Exercise\n')
+            str_list.append('E: Saccadic Eye Exercise\n')
             str_list.extend(['\n', 'ESC: Exit\n'])
 
         self.label.text = ''.join(str_list)
@@ -3136,13 +3135,8 @@ class Saccadic:
             x = self.radius
         elif saccadic.position == 'right':
             x = window.width - self.radius
-        pyglet.graphics.draw(4, pyglet.gl.GL_POLYGON, ('v2i', (
-            x - self.radius, y - self.radius,  # lower-left
-            x + self.radius, y - self.radius,  # lower-right
-            x + self.radius, y + self.radius,  # upper-right
-            x - self.radius, y + self.radius,  # upper-left
-
-            )), ('c4B', self.color * 4))
+        rect = pyglet.shapes.Rectangle(x - self.radius, y - self.radius, self.radius * 2, self.radius * 2, self.color, batch=None, group=None)
+        rect.draw()
 
 class Panhandle:
     def __init__(self, n=-1):
@@ -4062,7 +4056,7 @@ def on_key_press(symbol, modifiers):
         elif symbol == key.SPACE:
             new_session()
 
-        elif symbol == key.E and cfg.WINDOW_FULLSCREEN:
+        elif symbol == key.E:
             saccadic.start()
 
         elif symbol == key.G:
