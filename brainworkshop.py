@@ -2312,31 +2312,22 @@ class Circles:
 
         self.circle = []
         for index in range(0, cfg.THRESHOLD_FALLBACK_SESSIONS - 1):
-            self.circle.append([pyglet.shapes.Rectangle(self.start_x + self.distance * index - self.radius,
-                                                        self.y + self.radius,
-                                                        self.start_x + self.distance * index + self.radius,
-                                                        self.y + self.radius,
-                                                        color=self.not_activated[:3], batch=batch),
-                                pyglet.shapes.Rectangle(self.start_x + self.distance * index + self.radius,
-                                                        self.y - self.radius,
-                                                        self.start_x + self.distance * index - self.radius,
-                                                        self.y - self.radius,
-                                                        color=self.not_activated[:3], batch=batch)])
+            self.circle.append(pyglet.shapes.Circle(self.start_x + self.distance * index,
+                                                    self.y,
+                                                    self.radius,
+                                                    color=self.not_activated, batch=batch))
 
         self.update()
 
     def update(self):
         if mode.manual or mode.started or cfg.JAEGGI_MODE:
             for i in range(0, cfg.THRESHOLD_FALLBACK_SESSIONS - 1):
-                for j in range(2):
-                    self.circle[i][j].colors = (self.invisible * 4)
+                self.circle[i].color = self.invisible
         else:
             for i in range(0, cfg.THRESHOLD_FALLBACK_SESSIONS - 1):
-                for j in range(2):
-                    self.circle[i][j].colors = (self.not_activated * 4)
+                self.circle[i].color = self.not_activated
             for i in range(0, mode.progress):
-                for j in range(2):
-                    self.circle[i][j].colors = (self.activated * 4)
+                self.circle[i].color = self.activated
 
 # this is the black text above the field
 class GameModeLabel:
